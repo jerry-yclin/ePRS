@@ -33,7 +33,6 @@ This simulation demonstrates how ePRS outperforms standard methods (P+T, Elastic
 **Goal**: Predict a target phenotype using a small training set, leveraging a GWAS of a related source phenotype.
 **Location**: [`simulations/phenotype_prediction/`](simulations/phenotype_prediction/)
 
-See the `README.md` in that directory for a full explanation and code.
 
 ### 2. Simulation: Disease Subtype Differentiation
 
