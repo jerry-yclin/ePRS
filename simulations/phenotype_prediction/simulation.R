@@ -106,13 +106,13 @@ for (sim in 1:sim_count) {
     en[sim, iter] <- cor(y_test, y_pred_en)
 
     # --- Method 3: ePRS with Elastic Net ---
-    # Define the evidence term R_j from source p-values.
+    # Define the evidence term E_j from source p-values.
     # We use a transformation that is more sensitive to p-value changes than -log10(p).
-    R_j <- 1/-log10(pval)
-    # R_j <- 10 * (1 - (1 - pval)^8)
+    E_j <- 1/-log10(pval)
+    # E_j <- 10 * (1 - (1 - pval)^8)
 
-    # The penalty factor combines external evidence (R_j) with genetic correlation (r_g)
-    pf <- R_j * r_g_values[sim, iter] + (1 - r_g_values[sim, iter])
+    # The penalty factor combines external evidence (E_j) with genetic correlation (r_g)
+    pf <- E_j * r_g_values[sim, iter] + (1 - r_g_values[sim, iter])
 
     # Tune alpha for ePRS
     validation_cors_eprs <- sapply(alpha_thr, function(alpha_tune) {
