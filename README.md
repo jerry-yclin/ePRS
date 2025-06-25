@@ -17,9 +17,9 @@ Standard penalized regression (like Ridge or Elastic Net) treats all genetic var
 
 The penalty for each variant *j* is weighted using a `penalty.factor` in `glmnet`:
 
-`penalty.factor_j = R_j * r_g + (1 - r_g)`
+`penalty.factor_j = E_j * r_g + (1 - r_g)`
 
-- **`R_j`**: A measure of evidence from the source GWAS. A common choice is `1 / -log10(p-value)`. Variants with smaller p-values in the source study receive a smaller `R_j`, and thus a smaller penalty, encouraging the model to include them.
+- **`E_j`**: A measure of evidence from the source GWAS. A common choice is `1 / -log10(p-value)`. Variants with smaller p-values in the source study receive a smaller `E_j`, and thus a smaller penalty, encouraging the model to include them.
 - **`r_g`**: The estimated genetic correlation between the source and target phenotypes. This acts as a fail-safe mechanism, controlling how much we trust the external evidence. A high `r_g` puts more weight on the source GWAS p-values.
 
 ## Usage and Examples
