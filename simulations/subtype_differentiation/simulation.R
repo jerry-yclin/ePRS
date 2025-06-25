@@ -1,4 +1,4 @@
-# run_simulation.R (for Subtype Differentiation)
+# simulation.R (for Subtype Differentiation)
 #
 # Description:
 # This script simulates a scenario to test if a model can differentiate between
