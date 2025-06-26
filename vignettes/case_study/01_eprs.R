@@ -81,14 +81,14 @@ eprs_penalty_factors <- c(eprs_penalty_factors, rep(0, ncol(covariates)))     # 
 # Tune alpha for ePRS
 alpha_thr <- c(0, 0.2, 0.4, 0.6, 0.8, 1)
 validation_cors_eprs <- sapply(alpha_thr, function(alpha_tune) {
-   m <- cv.glmnet(x_train, y_train, nfolds = 3, alpha = alpha_tune, penalty.factor = pf)
+   m <- cv.glmnet(x_train, y_train, nfolds = 3, alpha = alpha_tune, penalty.factor = eprs_penalty_factors)
    y_pred_valid <- predict(m, x_valid, s = "lambda.min")
    cor(y_valid, y_pred_valid)
     })
 best_alpha_eprs <- alpha_thr[which.max(validation_cors_eprs)]
 
 # Train the ePRS model
-cv_eprs <- cv.glmnet(rbind(x_train, x_valid), c(y_train, y_valid), family = "binomial", alpha = 0.8,      
+cv_eprs <- cv.glmnet(rbind(x_train, x_valid), c(y_train, y_valid), family = "binomial", alpha = best_alpha_eprs,      
                      penalty.factor = eprs_penalty_factors)
 pred_eprs <- predict(cv_eprs, x_test, s = "lambda.min", type = "response")
 auc_eprs <- roc(y_test, as.vector(pred_eprs), quiet = TRUE)$auc
