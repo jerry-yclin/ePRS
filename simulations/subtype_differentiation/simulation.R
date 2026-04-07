@@ -154,7 +154,7 @@ for (sim in 1:sim_count) {
     pred_eprs <- predict(final_eprs_model, df_test_final, s = "lambda.min", type = "response")
     eprs[sim, iter] <- roc(y_test_final, as.vector(pred_eprs), quiet=TRUE)$auc
     
-    print(paste("sim:", sim, "| Iter:", iter, "| r_g:", round(r_g_subtypes[sim, iter], 2),
+    print(paste("sim:", sim, "| Iter:", iter, "| r_g:", round(r_g_subtype[sim, iter], 2),
                 "| EN AUC:", round(en[sim, iter], 3),
                 "| ePRS AUC:", round(eprs[sim, iter], 3)))
   }
