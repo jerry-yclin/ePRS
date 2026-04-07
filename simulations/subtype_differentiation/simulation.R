@@ -66,7 +66,7 @@ for (sim in 1:sim_count) {
     test_a_risk <- df_test %*% beta_a + rnorm(n_row, 0, 20)
     test_b_risk <- df_test %*% beta_b + rnorm(n_row, 0, 20)
     
-    # An individual is a "case" of general phenotype if the combined risk is high (using max)
+    # An individual is a "case" of general phenotype if the combined risk is high
     # General Phenotype
     source_g_risk <- source_a_risk + source_b_risk + rnorm(n_row * 8, 0, 30)
     target_g_risk <- target_a_risk + target_b_risk + rnorm(n_row, 0, 30)
@@ -92,7 +92,7 @@ for (sim in 1:sim_count) {
     ##-- Create the Target Training/Validation Set: Subtype A vs. Healthy Controls --##
     diff_target <- target_a_risk - target_b_risk
     subtype_target <- ifelse(diff_target > 0.5*sd(diff_target), 1,
-                             ifelse(diff_target) < -0.5*sd(diff_target), 0, -1))   # Is it more likely A or B?
+                             ifelse(diff_target < -0.5*sd(diff_target), 0, -1))   # Is it more likely A or B?
     
     # We can only confidently identify "Subtype A" cases and "Healthy" controls
     indices_subtype_A <- which(target_status == 1 & subtype_target == 1)
@@ -125,14 +125,14 @@ for (sim in 1:sim_count) {
       m <- cv.glmnet(df_target_A_vs_healthy[train_idx,], y_target_A_vs_healthy[train_idx],
                      family = "binomial", alpha = alpha)
       pred <- predict(m, df_target_A_vs_healthy[valid_idx,], s = "lambda.min", type = "response")
-      roc(y_target_A_vs_healthy[valid_idx], as.vector(pred), quiet=TRUE)$auc
+      roc(y_target_A_vs_healthy[valid_idx], as.vector(pred), direction = "<", quiet=TRUE)$auc
     })
     best_alpha_en <- alpha_thr[which.max(valid_aucs_en)]
     
     # Train final EN model on all available target data
     final_en_model <- cv.glmnet(df_target_A_vs_healthy, y_target_A_vs_healthy, family = "binomial", alpha = best_alpha_en)
     pred_en <- predict(final_en_model, df_test_final, s = "lambda.min", type = "response")
-    en[sim, iter] <- roc(y_test_final, as.vector(pred_en), quiet=TRUE)$auc
+    en[sim, iter] <- roc(y_test_final, as.vector(pred_en), direction = "<", quiet=TRUE)$auc
     
     ##-- Method 2: ePRS with Elastic Net --##
     E_j <- 1 / -log10(source_pvals)
@@ -144,7 +144,7 @@ for (sim in 1:sim_count) {
       m <- cv.glmnet(df_target_A_vs_healthy[train_idx,], y_target_A_vs_healthy[train_idx],
                      family = "binomial", alpha = alpha, penalty.factor = pf)
       pred <- predict(m, df_target_A_vs_healthy[valid_idx,], s = "lambda.min", type = "response")
-      roc(y_target_A_vs_healthy[valid_idx], as.vector(pred), quiet=TRUE)$auc
+      roc(y_target_A_vs_healthy[valid_idx], as.vector(pred), direction = "<", quiet=TRUE)$auc
     })
     best_alpha_eprs <- alpha_thr[which.max(valid_aucs_eprs)]
     
@@ -152,7 +152,7 @@ for (sim in 1:sim_count) {
     final_eprs_model <- cv.glmnet(df_target_A_vs_healthy, y_target_A_vs_healthy, family = "binomial",
                                   alpha = best_alpha_eprs, penalty.factor = pf)
     pred_eprs <- predict(final_eprs_model, df_test_final, s = "lambda.min", type = "response")
-    eprs[sim, iter] <- roc(y_test_final, as.vector(pred_eprs), quiet=TRUE)$auc
+    eprs[sim, iter] <- roc(y_test_final, as.vector(pred_eprs), direction = "<", quiet=TRUE)$auc
     
     print(paste("sim:", sim, "| Iter:", iter, "| r_g:", round(r_g_subtype[sim, iter], 2),
                 "| EN AUC:", round(en[sim, iter], 3),
