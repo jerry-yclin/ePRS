@@ -169,7 +169,7 @@ df_results <- data.frame(
 )
 
 # Create the plot
-ggplot(df_results, aes(x = rg_subtypes, y = auc, color = method)) +
+ggplot(df_results, aes(x = rg_subtype, y = auc, color = method)) +
   geom_smooth(se = TRUE, alpha = 0.2, span = 0.5) +
   geom_hline(yintercept = 0.5, linetype = "dashed", color = "red") +
   scale_color_manual(values = c("Elastic Net" = "#0072B2", "ePRS" = "#D55E00")) +
