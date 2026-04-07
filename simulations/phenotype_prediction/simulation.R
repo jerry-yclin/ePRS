@@ -62,10 +62,13 @@ for (sim in 1:sim_count) {
     y_target <- df_target %*% beta_target + rnorm(n_row, 0, 4)              
 
     # --- Run "External" Source GWAS ---
-    # This generates the p-values that ePRS will use as external evidence.
-    pval <- sapply(1:n_col, function(i) {
-      summary(lm(y_source ~ df_source[, i]))$coef[2, 4]
-    })
+    # These source GWAS effect-size estimates define the Source PRS,
+    # and the corresponding p-values are used as external evidence for ePRS.
+    source_gwas <- vapply(1:n_col, function(i) {
+      coef(summary(lm(y_source ~ df_source[, i])))[2, c(1, 4)]
+    }, numeric(2))
+    source_beta_hat <- source_gwas[1, ]
+    pval <- source_gwas[2, ]
 
     # --- Split Target Data into Training/Validation/Test Sets ---
     # For tuning alpha and final evaluation
@@ -84,7 +87,7 @@ for (sim in 1:sim_count) {
     # --- Method 1: Source PRS benchmark ---
     # External-source benchmark: apply source effect sizes directly
     # to the target cohort without refitting in the target data.
-    y_pred_source <- as.vector(df_target[test_idx, ] %*% beta_source)
+    y_pred_source <- as.vector(df_target[test_idx, ] %*% beta_source_hat)
     source[sim, iter] <- cor(y_test, y_pred_source)
 
     # --- Method 2: P+T (Clumping and Thresholding) using Target Betas ---
