@@ -164,7 +164,7 @@ for (sim in 1:sim_count) {
 # Convert wide matrices to a long (tidy) dataframe for ggplot
 df_results <- data.frame(
     auc = c(as.vector(en), as.vector(eprs)),
-    rg = c(as.vector(r_g_subtypes), as.vector(r_g_subtypes)),
+    rg = c(as.vector(r_g_subtype), as.vector(r_g_subtype)),
     method = rep(c("Elastic Net", "ePRS"), each = length(en))
 )
 
