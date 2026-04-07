@@ -20,6 +20,10 @@ iter_count <- 40          # Number of different r_g values per run
 n_row <- 300              # Sample size of target cohort
 n_col <- 1000             # Number of simulated SNPs
 
+# Train-test splits
+train_prop <- 0.5
+valid_prop <- 0.2
+
 # Define the SNP correlation structure (AR1 with rho=0)
 ar1_cor <- function(n, rho) {
   exponent <- abs(matrix(1:n - 1, nrow = n, ncol = n, byrow = TRUE) - (1:n - 1))
@@ -64,9 +68,13 @@ for (sim in 1:sim_count) {
 
     # --- Split Target Data into Training/Validation/Test Sets ---
     # For tuning alpha and final evaluation
-    train_idx <- 1:160
-    valid_idx <- 161:200
-    test_idx <- 201:300
+    n_train <- floor(train_prop * n_row)
+    n_valid <- floor(valid_prop * n_row)
+    n_test  <- n_row - n_train - n_valid
+
+    train_idx <- seq_len(n_train)
+    valid_idx <- seq_len(n_valid) + n_train
+    test_idx  <- seq_len(n_test) + n_train + n_valid
 
     y_train <- y_target[train_idx]
     y_valid <- y_target[valid_idx]
@@ -132,14 +140,14 @@ for (sim in 1:sim_count) {
 }
 
 # --- 5. Plotting Results ---
-df = data.frame(r_sq=c(p_t,en,eprs),
-                rg=rep(r_g, 3),
-                method=rep(c("P+T","EN","ePRS"), each=1600))
+df = data.frame(r_sq = c(p_t, en, eprs),
+                rg = rep(r_g_values, 3),
+                method = rep(c("P+T", "EN", "ePRS"), each = sim_count * iter_count))
 
+ggplot(df, aes(x = rg_values, y = r_sq)) + 
+  geom_point(aes(col = method)) +
+  geom_smooth(col = "black", lty = "dashed") +
+  facet_grid(method ~ .)
 
-ggplot(df, aes(x=rg, y=r_sq)) + geom_point(aes(col=method)) +
-  geom_smooth(col="black", lty="dashed") +
-  facet_grid(method~.)
-
-ggplot(df, aes(x=rg, y=r_sq)) +
-  geom_smooth(aes(col=method), lty="dashed", se=F)
+ggplot(df, aes(x = rg_values, y = r_sq)) +
+  geom_smooth(aes(col = method), lty = "dashed", se = FALSE)
