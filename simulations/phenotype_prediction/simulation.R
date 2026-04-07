@@ -32,12 +32,13 @@ ar1_cor <- function(n, rho) {
 corr_matrix <- ar1_cor(n_col, 0)
 
 # --- 3. Initialize Result Matrices ---
-# We will compare three main methods:
+# We will compare four main methods:
+# - source: External-source benchmark
 # - p_t: P+T using target data for beta estimation
 # - en: Standard Elastic Net
-# - eprs_en: ePRS with Elastic Net
+# - eprs: ePRS with Elastic Net
 
-r_g_values <- p_t <- en <- eprs <- matrix(nrow = sim_count, ncol = iter_count)
+r_g_values <- source <- p_t <- en <- eprs <- matrix(nrow = sim_count, ncol = iter_count)
 
 # --- 4. Main Simulation Loop ---
 for (sim in 1:sim_count) {
@@ -80,7 +81,13 @@ for (sim in 1:sim_count) {
     y_valid <- y_target[valid_idx]
     y_test <- y_target[test_idx]
 
-    # --- Method 1: P+T (Clumping and Thresholding) using Target Betas ---
+    # --- Method 1: Source PRS benchmark ---
+    # External-source benchmark: apply source effect sizes directly
+    # to the target cohort without refitting in the target data.
+    y_pred_source <- as.vector(df_target[test_idx, ] %*% beta_source)
+    source[sim, iter] <- cor(y_test, y_pred_source)
+
+    # --- Method 2: P+T (Clumping and Thresholding) using Target Betas ---
     effect_size = pval_target = array(dim=n_col)
     for(i in 1:n_col){
       model = summary(lm(y_train ~ df_target[train_idx,i]))$coef
@@ -98,7 +105,7 @@ for (sim in 1:sim_count) {
     y_pred = df_target[test_idx, selected_snps] %*% as.matrix(effect_size[selected_snps])
     p_t[sim, iter] = cor(y_test, y_pred)
 
-    # --- Method 2: Standard Elastic Net (EN) ---
+    # --- Method 3: Standard Elastic Net (EN) ---
     # Tune alpha on a validation set
     alpha_thr <- c(0, 0.2, 0.4, 0.6, 0.8, 1)
     validation_cors <- sapply(alpha_thr, function(alpha_tune) {
@@ -113,7 +120,7 @@ for (sim in 1:sim_count) {
     y_pred_en <- predict(final_en_model, df_target[test_idx, ], s = "lambda.min")
     en[sim, iter] <- cor(y_test, y_pred_en)
 
-    # --- Method 3: ePRS with Elastic Net ---
+    # --- Method 4: ePRS with Elastic Net ---
     # Define the evidence term E_j from source p-values.
     # We use a transformation that is more sensitive to p-value changes than -log10(p).
     E_j <- 1/-log10(pval)
@@ -140,14 +147,14 @@ for (sim in 1:sim_count) {
 }
 
 # --- 5. Plotting Results ---
-df = data.frame(r_sq = c(p_t, en, eprs),
-                rg = rep(r_g_values, 3),
-                method = rep(c("P+T", "EN", "ePRS"), each = sim_count * iter_count))
+df = data.frame(r_sq = c(source, p_t, en, eprs),
+                rg = rep(r_g_values, 4),
+                method = rep(c("Source", "P+T", "EN", "ePRS"), each = sim_count * iter_count))
 
-ggplot(df, aes(x = rg_values, y = r_sq)) + 
+ggplot(df, aes(x = rg, y = r_sq)) + 
   geom_point(aes(col = method)) +
   geom_smooth(col = "black", lty = "dashed") +
   facet_grid(method ~ .)
 
-ggplot(df, aes(x = rg_values, y = r_sq)) +
+ggplot(df, aes(x = rg, y = r_sq)) +
   geom_smooth(aes(col = method), lty = "dashed", se = FALSE)
