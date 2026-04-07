@@ -87,7 +87,7 @@ for (sim in 1:sim_count) {
     # --- Method 1: Source PRS benchmark ---
     # External-source benchmark: apply source effect sizes directly
     # to the target cohort without refitting in the target data.
-    y_pred_source <- as.vector(df_target[test_idx, ] %*% beta_source_hat)
+    y_pred_source <- as.vector(df_target[test_idx, ] %*% beta_source)
     source[sim, iter] <- cor(y_test, y_pred_source)
 
     # --- Method 2: P+T (Clumping and Thresholding) using Target Betas ---
