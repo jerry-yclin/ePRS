@@ -67,7 +67,7 @@ for (sim in 1:sim_count) {
     source_gwas <- vapply(1:n_col, function(i) {
       coef(summary(lm(y_source ~ df_source[, i])))[2, c(1, 4)]
     }, numeric(2))
-    source_beta_hat <- source_gwas[1, ]
+    beta_source_hat <- source_gwas[1, ]
     pval <- source_gwas[2, ]
 
     # --- Split Target Data into Training/Validation/Test Sets ---
