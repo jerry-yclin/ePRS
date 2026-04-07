@@ -14,15 +14,15 @@ library(MASS)
 library(ggplot2)
 
 # --- 2. Simulation Parameters ---
-set.seed(100)
+set.seed(1000)
 sim_count <- 40           # Number of full simulation runs
 iter_count <- 40          # Number of different r_g values per run
 n_row <- 300              # Sample size of target cohort
 n_col <- 1000             # Number of simulated SNPs
 
 # Train-test splits
-train_prop <- 0.5
-valid_prop <- 0.2
+train_prop <- 0.55
+valid_prop <- 0.15
 
 # Define the SNP correlation structure (AR1 with rho=0)
 ar1_cor <- function(n, rho) {
@@ -116,7 +116,9 @@ for (sim in 1:sim_count) {
       y_pred_valid <- predict(m, df_target[valid_idx, ], s = "lambda.min")
       cor(y_valid, y_pred_valid)
     })
+    # Fall back to ridge regression if no predictors are selected during cross-validation
     best_alpha_en <- alpha_thr[which.max(validation_cors)]
+    best_alpha_en <- ifelse(sum(is.na(alpha_thr[validation_cors]))==length(alpha_thr), 0, alpha_thr[which.max(validation_cors)])
     
     # Train final model on combined train+valid set and evaluate on test set
     final_en_model <- cv.glmnet(df_target[c(train_idx, valid_idx), ], y_target[c(train_idx, valid_idx)], nfolds = 3, alpha = best_alpha_en)
