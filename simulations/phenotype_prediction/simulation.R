@@ -59,7 +59,7 @@ for (sim in 1:sim_count) {
 
     # --- Simulate Phenotypes ---
     y_source <- df_source %*% beta_source + rnorm(nrow(df_source), 0, 0)   
-    y_target <- df_target %*% beta_target + rnorm(n_row, 0, 4)              
+    y_target <- df_target %*% beta_target + rnorm(n_row, 0, 0)              
 
     # --- Run "External" Source GWAS ---
     # These source GWAS effect-size estimates define the Source PRS,
